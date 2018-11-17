@@ -109,6 +109,7 @@ public class Application {
 		txtrImage.setLineWrap(true);
 		txtrImage.setText("Image: ");
 		txtrImage.setBounds(10, 45, 206, 45);
+		txtrImage.setEditable(false);
 		frame.getContentPane().add(txtrImage);
 		
 		txtrFile = new JTextArea();
@@ -118,6 +119,7 @@ public class Application {
 		txtrFile.setFont(new Font("Tahoma", Font.PLAIN, 11));
 		txtrFile.setBackground(SystemColor.menu);
 		txtrFile.setBounds(10, 101, 206, 45);
+		txtrFile.setEditable(false);
 		frame.getContentPane().add(txtrFile);
 		
 		pbUsed = new JProgressBar();
