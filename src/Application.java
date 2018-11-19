@@ -27,34 +27,46 @@ import javax.swing.filechooser.FileFilter;
 
 //Sorry for the lack of comments. I might get around to that eventually.
 
+//Main class for the program, controls frontend and allows the user to interface with the program
 public class Application {
 
-	
+	//Prevents the use of photo types that may not be recognized by the program
 	private String[] supportedTypes = {"png", "jpg", "bmp", "jpeg"};
 	
 	
 	private JFrame frame;
 	
+	//FileChooser used in selecting files and images, only needs one instance for both cases
 	private JFileChooser fc = new JFileChooser();
+	
+	//Various labels, buttons, and bars that make up the UI of the application
+	//Self explanatory
 	private JLabel lblAvailableSpace = null;
 	private JLabel lblImage;
 	private JButton btnSetImage;
 	private JButton btnSetFile;
+	//The following two JTextAreas display the selected file paths
 	private JTextArea txtrImage;
 	private JTextArea txtrFile;
+	//Progress bar to represent used space
 	private JProgressBar pbUsed;
+	//Buttons that perform operations using the selected file and image
 	private JButton btnWrite; 
 	private JButton btnExtract;
 	private JButton btnWipe;
 	
+	//Variables related to the selected Image
 	protected File imageFile = null;
 	protected BufferedImage image = null;
 	
+	//Variables related to the selected File
 	protected File selectedFile = null;
 	
+	//For the Progress Bar
 	protected long totalSpace;
 	protected long usedSpace;
 	
+	//Creates the window, calls the Application constructor
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -67,25 +79,35 @@ public class Application {
 			}
 		});
 	}
-
+	
+	//Calls the Initialize method, not sure why this is here but the program works so I'm not touching it.
 	public Application() {
 		initialize();
 	}
 
+	//Initializes the various labels, buttons, and whatnot
+	/* The button functions defined later in this method handle 
+	 * the way the frontend talks to the main program, not all
+	 * of them are simple method calls so don't skim over the
+	 * button initialization when debugging.
+	 */
 	private void initialize() {
+		//Set default directory for the file chooser
 		fc.setCurrentDirectory(Paths.get("").toAbsolutePath().toFile());
 		
+		//Initialize the window
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		frame.setResizable(false);
 		
+		//Init available space label
 		lblAvailableSpace = new JLabel("Available Space: ");
 		lblAvailableSpace.setBounds(226, 214, 198, 36);
-		
 		frame.getContentPane().add(lblAvailableSpace);
 		
+		//Init image preview
 		lblImage = new JLabel("Image");
 		lblImage.setBorder(BorderFactory.createLineBorder(Color.black));
 		lblImage.setBackground(Color.WHITE);
@@ -94,14 +116,17 @@ public class Application {
 		lblImage.setBounds(226, 11, 198, 198);
 		frame.getContentPane().add(lblImage);
 		
+		//Init "Set Image" button, function implemented later in this method
 		btnSetImage = new JButton("Set Image");
 		btnSetImage.setBounds(109, 11, 107, 23);
 		frame.getContentPane().add(btnSetImage);
 		
+		//Init "Set File" button, function implemented later in this method
 		btnSetFile = new JButton("Set File");
 		btnSetFile.setBounds(10, 11, 89, 23);
 		frame.getContentPane().add(btnSetFile);
 		
+		//Init label that displays the selected image path
 		txtrImage = new JTextArea();
 		txtrImage.setBackground(SystemColor.control);
 		txtrImage.setFont(new Font("Tahoma", Font.PLAIN, 11));
@@ -111,7 +136,8 @@ public class Application {
 		txtrImage.setBounds(10, 45, 206, 45);
 		txtrImage.setEditable(false);
 		frame.getContentPane().add(txtrImage);
-		
+
+		//Init label that displays the selected file path
 		txtrFile = new JTextArea();
 		txtrFile.setWrapStyleWord(true);
 		txtrFile.setText("File: ");
@@ -122,27 +148,33 @@ public class Application {
 		txtrFile.setEditable(false);
 		frame.getContentPane().add(txtrFile);
 		
+		//Init progress bar
 		pbUsed = new JProgressBar();
 		pbUsed.setBounds(10, 236, 200, 14);
 		frame.getContentPane().add(pbUsed);
 		
+		//Init Write Button, function implemented later in this method
 		btnWrite = new JButton("Write");
 		btnWrite.setBounds(10, 157, 89, 23);
 		frame.getContentPane().add(btnWrite);
 		
+		//Init Extract Button, function implemented later in this method
 		btnExtract = new JButton("Extract");
 		btnExtract.setBounds(109, 157, 107, 23);
 		frame.getContentPane().add(btnExtract);
 		
+		//Init Wipe button and implement functionality
 		btnWipe = new JButton("Wipe");
 		btnWipe.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				//Ask user to confirm deletion of stored data
 				int choice = JOptionPane.showConfirmDialog(frame, "Are you sure you want to remove all data from this image?", "Confirm wipe", JOptionPane.YES_NO_CANCEL_OPTION);
 				
+				//If anything but "Yes" is chosen, cancel the operation
 				if (choice != JOptionPane.YES_OPTION)
 					return;
 				
-				//Wipe it clean
+				//Wipe all stored data from the image
 				wipe();
 			}
 		});
@@ -150,31 +182,37 @@ public class Application {
 		frame.getContentPane().add(btnWipe);
 		
 		
-		
+		//Implement functionality of the "Set Image" button
 		btnSetImage.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) {
 				selectStorage();
 			}
 		});
 		
+		//Implement functionality of the "Set File" button
 		btnSetFile.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) {
 				selectFile();
 			}
 		});
 		
+		//Implement functionality of the "Extract" button
 		btnExtract.addActionListener(new ActionListener() {			
 			@Override public void actionPerformed(ActionEvent e) {
+				//Cancel operation and inform user if no image  is selected
 				if (image == null) {
 					JOptionPane.showMessageDialog(frame, "No image selected!", "ERROR!", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				
+				//Initialize the ImageFileReader
 				ImageFileReader ifr = new ImageFileReader(image, imageFile.getParentFile());
 				
+				//Extract all files from the image, keeping a list of them to display to the user
 				ArrayList<File> extractedFiles = new ArrayList<File>();
 				while (ifr.eof == false) {
 					try {
+						//The .extractFile() method handles the I/O and returns a File object
 						extractedFiles.add(ifr.extractFile());
 					} catch (IOException e1) {
 						e1.printStackTrace();
@@ -182,15 +220,18 @@ public class Application {
 					}
 				}
 				
+				//Build a string listing the extracted files
 				String fileList = "Extracted files:";
 				
 				for (int i = 0; i < extractedFiles.size() - 1; i++)
 					fileList += "\n" + extractedFiles.get(i).toPath();
 				
+				//Show the list of extracted files to the user
 				JOptionPane.showMessageDialog(frame, fileList, "Extraction Complete", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 		
+		//Implement functionality of the "Write" button
 		btnWrite.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) {
 				if (image == null || selectedFile == null) {
