@@ -515,16 +515,18 @@ public class Application {
 			//How much space needs to be formatted
 			long space = ido.freeSpace();
 			
-			//Write 
+			//Write the database tag to the image
 			ido.write(0xDB);
 			space--;
 			
+			//Create a progress bar to show wiping progress in a new window
 			JProgressBar pb = new JProgressBar();
 			pb.setMinimum(0);
 			pb.setMaximum((int)space);
 			
 			Long spaceRef = Long.valueOf(space);
 			
+			//Create a thread that wipes the image and updates the progress bar
 			Thread thr = new Thread(new Runnable(){public void run() {
 				try {
 					long space = spaceRef.longValue();
@@ -540,40 +542,59 @@ public class Application {
 				}
 			}});
 			
+			//Start the wiping thread
 			thr.start();
 
+			//Show the progress bar for the wiping in a popup window
 			JOptionPane.showMessageDialog(frame, pb);
 			
+			//Wait for the wiping to be completed
 			thr.join();
 			
+			//Debug
 			System.out.println("done");
 			
+			//Close the image data writer
 			ido.close();
 
+			//Write the newly wiped file to the disk
 			ImageIO.write(image, "png", imageFile);
 		} catch (Exception e1) {
 			JOptionPane.showMessageDialog(frame, "Error wiping file!", "ERROR!", JOptionPane.ERROR_MESSAGE);
 		}
 		
+		//Recalculate available/used space and update relevant UI components
 		analyzeSpace(image);
 	}
 	
-	private String humanReadable(long space) {
+	/**
+	 * Class for converting amounts of bytes into a human readable format
+	 * @param bytes The number of bytes you would like to represent
+	 * @return Human readable String
+	 */
+	private String humanReadable(long bytes) {
+		//Units for use in the string
+		//Note this is not metric, we use units like kiB and MiB to represent conversion
+		//by a factor 1024, not 1000
 		String units = "kMGT";
 		
-		double size = (double) space;
+		//Store as Double to allow for decimal points 
+		double amount = (double) bytes;
 		
-		if (size < 1024) {
-			return String.format("%.2f bytes", size);
+		//If it can be represented as just bytes then do so and return that
+		if (amount < 1024) {
+			return String.format("%.2f bytes", amount);
 		}
 		
+		//If it requires a higher unit then divide by 1024 until a suitable amount has been reached
 		for (int i = 0; i < units.length(); i++) {
-			size /= 1024;
-			if (size < 1024) {
-				return String.format("%.2f", size) + " " + units.charAt(i) + "iB";
+			amount /= 1024;
+			if (amount < 1024) {
+				return String.format("%.2f", amount) + " " + units.charAt(i) + "iB";
 			}
 		}
 		
-		return String.format("%.2f", size) + " " + units.charAt(units.length() - 1);
+		//Return the value in Human readable format
+		return String.format("%.2f", amount) + " " + units.charAt(units.length() - 1);
 	}
 }
