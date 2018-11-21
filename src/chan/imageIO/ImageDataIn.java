@@ -11,30 +11,30 @@ import chan.util.Hilbert;
 public class ImageDataIn extends InputStream {
 	
 	/**The image this stream is bound to*/
-	BufferedImage image;
+	private BufferedImage image;
 	/**Current position in the image*/
-	long index;
+	private long index;
 	
 	/**Index used for the mark/reset functionality of InputStream*/
-	long markIndex;
+	private long markIndex;
 	
 	/**For use in the call to the Hilbert Curve class
 	 * <p>
 	 * The Hilbert curve requires a dimension that is some power of two, this variable stores
 	 * the power of 2 that is equal to or greater than the largest dimension of the selected image
 	 */
-	int sizePow2;
+	private int sizePow2;
 	
 	/**This variable acts as the return for the Hilbert class since it is passed as a reference
 	 * and updated by the Hilbert class
 	 */
-	Point p;
+	private Point p;
 	
 	/**The hilbert class can only make perfect squares whose dimensions are equal and are some power
 	 * of two that is greater than one, these bounds are used to skip any positions calculated by
 	 * the Hilbert class that may be outside of the image's bounds 
 	 */
-	Rectangle bounds;
+	private Rectangle bounds;
 	
 	/**Mask used in combination with the "binary AND" operator to get only the first bit from a given
 	 * byte

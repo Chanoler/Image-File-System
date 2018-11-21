@@ -16,11 +16,11 @@ public class ImageFileReader {
 	 * #			File Data
 	 */
 	
-	File dir;
+	private File dir;
 	
-	ImageDataIn idi;
-	DataInputStream dis;
-	boolean eof = false;
+	private ImageDataIn idi;
+	private DataInputStream dis;
+	private boolean eof = false;
 	
 	public ImageFileReader(BufferedImage image, File outputDirectory) {
 		dir = outputDirectory;

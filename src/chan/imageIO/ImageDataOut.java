@@ -10,18 +10,39 @@ import chan.util.Hilbert;
 
 public class ImageDataOut extends OutputStream {
 	
-	BufferedImage image;
-	long index;
-	int currentBit;
-	int x, y;
-	int rgb;
-	Color c;
-	int sizePow2;
-	Point p;
-	Rectangle bounds;
+
+	/**The image this stream is bound to*/
+	private BufferedImage image;
+	/**Current position in the image*/
+	private long index;
 	
+	/**For use in the call to the Hilbert Curve class
+	 * <p>
+	 * The Hilbert curve requires a dimension that is some power of two, this variable stores
+	 * the power of 2 that is equal to or greater than the largest dimension of the selected image
+	 */
+	private int sizePow2;
+	
+	/**This variable acts as the return for the Hilbert class since it is passed as a reference
+	 * and updated by the Hilbert class
+	 */
+	private Point p;
+	
+	/**The hilbert class can only make perfect squares whose dimensions are equal and are some power
+	 * of two that is greater than one, these bounds are used to skip any positions calculated by
+	 * the Hilbert class that may be outside of the image's bounds 
+	 */
+	private Rectangle bounds;
+	
+	/**Mask used in combination with the "binary AND" operator to get only the first bit from a given
+	 * byte
+	 */
 	private static int firstBitMask = 0x1;
 	
+	/**
+	 * Constructor for the ImageDataOut stream
+	 * @param image An image containing data
+	 */
 	public ImageDataOut(BufferedImage image) {
 		
 		this.image = image;
@@ -47,7 +68,7 @@ public class ImageDataOut extends OutputStream {
 		
 		for (int i = 0; i < Byte.SIZE; i++) {
 			//Get bit from left to right
-			currentBit = firstBitMask & (b >> ((Byte.SIZE - i) - 1));
+			int currentBit = firstBitMask & (b >> ((Byte.SIZE - i) - 1));
 			
 			//Find x/y
 			Hilbert.d2xy(sizePow2, (int) (index / 3), p);
@@ -66,18 +87,15 @@ public class ImageDataOut extends OutputStream {
 				System.err.println("Sleeping interrupted");
 			}*/
 			
-			x = p.x;
-			y = p.y;
-			
 			//System.out.println(x + "\t" + y);
 			
-			rgb = image.getRGB(x, y);
+			int rgb = image.getRGB(p.x, p.y);
 			
 			//rgb = (int)index;
 			
 			
 			
-			c = new Color(rgb);
+			Color c = new Color(rgb);
 			
 			switch ((int) (index % 3)) {
 				case 0:
@@ -91,7 +109,7 @@ public class ImageDataOut extends OutputStream {
 					break;
 			}
 			
-			image.setRGB(x, y, rgb);
+			image.setRGB(p.x, p.y, rgb);
 			
 			index++;
 			

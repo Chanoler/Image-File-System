@@ -75,18 +75,18 @@ public class Application {
 	
 	//Variables related to the selected Image
 	/**The Image that was selected*/
-	protected File imageFile = null;
-	protected BufferedImage image = null;
+	private File imageFile = null;
+	private BufferedImage image = null;
 	
 	//Variables related to the selected File
 	/**The File that was selected*/
-	protected File selectedFile = null;
+	private File selectedFile = null;
 	
 	//For the Progress Bar
 	/**Measure of the total amount of space available in the selected image*/
-	protected long totalSpace;
+	private long totalSpace;
 	/**Measure of the amount of used space in the selected image*/
-	protected long usedSpace;
+	private long usedSpace;
 	
 	/**
 	 * Creates the window, calls the Application constructor
@@ -108,7 +108,7 @@ public class Application {
 	/**
 	 * Calls the Initialize method, not sure why this is here but the program works so I'm not touching it.
 	 */
-	public Application() {
+	private Application() {
 		initialize();
 	}
 
@@ -240,7 +240,7 @@ public class Application {
 				
 				//Extract all files from the image, keeping a list of them to display to the user
 				ArrayList<File> extractedFiles = new ArrayList<File>();
-				while (ifr.eof == false) {
+				while (ifr.isEof() == false) {
 					try {
 						//The .extractFile() method handles the I/O and returns a File object
 						extractedFiles.add(ifr.extractFile());
@@ -404,7 +404,7 @@ public class Application {
 		//Begin usedSpace calculation
 		ImageFileReader ifr = new ImageFileReader(image, imageFile.getParentFile());
 		//Check if file needs to be formatted
-		if (ifr.eof == true) {
+		if (ifr.isEof() == true) {
 			int result = JOptionPane.showConfirmDialog(frame, "This image must be formatted to store files, format now?", "Warning", JOptionPane.WARNING_MESSAGE);
 			
 			if (result == JOptionPane.YES_OPTION) {

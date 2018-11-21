@@ -18,8 +18,8 @@ public class ImageFileWriter {
 	 * #			File Data
 	 */
 	
-	ImageDataOut ido;
-	DataOutputStream dos;
+	private ImageDataOut ido;
+	private DataOutputStream dos;
 	
 	public ImageFileWriter(BufferedImage image, boolean append) {
 		ido = new ImageDataOut(image);
