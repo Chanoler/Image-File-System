@@ -332,7 +332,8 @@ public class Application {
 				final String[] extensions = supportedTypes;
 				
 				//Get name of file to be processed
-				String name = f.getName();
+				//Bigfix: Set letters to lower case to prevent a file being declined based on capitalization
+				String name = f.getName().toLowerCase();
 				
 				//Check if the file's extension matches any of our supported types
 				for (int i = 0 ; i < extensions.length; i++) {
