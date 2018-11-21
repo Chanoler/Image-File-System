@@ -1,3 +1,4 @@
+package chan.debug;
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -5,6 +6,11 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+
+import chan.imageIO.ImageDataIn;
+import chan.imageIO.ImageDataOut;
+import chan.imageIO.ImageFileReader;
+import chan.imageIO.ImageFileWriter;
 
 public class Tester {
 	

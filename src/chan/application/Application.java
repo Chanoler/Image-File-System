@@ -1,3 +1,4 @@
+package chan.application;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -24,6 +25,10 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
+
+import chan.imageIO.ImageDataOut;
+import chan.imageIO.ImageFileReader;
+import chan.imageIO.ImageFileWriter;
 
 //Sorry for the lack of comments. I might get around to that eventually.
 
@@ -338,7 +343,7 @@ public class Application {
 				//Check if the file's extension matches any of our supported types
 				for (int i = 0 ; i < extensions.length; i++) {
 					if (name.endsWith(extensions[i]))
-						return true;;
+						return true;
 				}
 				
 				return false;

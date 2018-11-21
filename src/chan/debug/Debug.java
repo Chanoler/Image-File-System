@@ -1,8 +1,12 @@
+package chan.debug;
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.File;
 
 import javax.imageio.ImageIO;
+
+import chan.imageIO.ImageDataIn;
+import chan.imageIO.ImageFileReader;
 
 /**
  * Class used for writing code to test various parts of the application
@@ -55,7 +59,7 @@ public class Debug {
 		
 		//Attempts to extract a file from the image and returns its path
 		ImageFileReader ifr = new ImageFileReader(image, new File("C:/Users/Christopher/Desktop/TEST.jpg").getParentFile());
-		System.out.println(ifr.eof);
+		System.out.println(ifr.isEof());
 		System.out.println(ifr.extractFile().toPath());
 	}
 	

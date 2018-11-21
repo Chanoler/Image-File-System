@@ -1,3 +1,4 @@
+package chan.imageIO;
 import java.awt.image.BufferedImage;
 import java.io.DataOutputStream;
 import java.io.File;

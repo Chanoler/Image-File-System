@@ -1,9 +1,12 @@
+package chan.imageIO;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+
+import chan.util.Hilbert;
 
 public class ImageDataIn extends InputStream {
 	
@@ -129,7 +132,7 @@ public class ImageDataIn extends InputStream {
 		return 0L;
 	}
 	
-	//Implementation of a method from InputStream, functions as specified in InputStream
+	//Implementation of a method from InputStream, functions as specified by InputStream
 	@Override public int read(byte[] b) throws IOException {
 		int i;
 		
@@ -164,17 +167,17 @@ public class ImageDataIn extends InputStream {
 		return (int) pixels;
 	}
 	
-	//Implementation of a method defined by InputStream
+	//Implementation of a method from InputStream, functions as specified by InputStream
 	@Override public boolean markSupported() {
 		return true;
 	}
 	
-	//Implementation of a method defined by InputStream
+	//Implementation of a method from InputStream, functions as specified by InputStream
 	@Override public synchronized void reset() throws IOException {
 		index = markIndex;
 	}
 	
-	//Implementation of a method defined by InputStream
+	//Implementation of a method from InputStream, functions as specified by InputStream
 	@Override public synchronized void mark(int readlimit) {
 		markIndex = index;
 	}

@@ -1,3 +1,4 @@
+package chan.imageIO;
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.File;
@@ -66,6 +67,14 @@ public class ImageFileReader {
 		}
 	}
 	
+	/**
+	 * Extracts the next available file in the image, if no file is available or the end of the
+	 * stream has been reached, returns null
+	 * <p>
+	 * TODO Bug causing files that already exist to be overwritten  
+	 * @return Path of the extracted file
+	 * @throws IOException
+	 */
 	public File extractFile() throws IOException {
 		if (eof)
 			return null;

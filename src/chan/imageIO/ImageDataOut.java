@@ -1,9 +1,12 @@
+package chan.imageIO;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+
+import chan.util.Hilbert;
 
 public class ImageDataOut extends OutputStream {
 	

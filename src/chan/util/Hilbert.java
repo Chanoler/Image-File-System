@@ -1,3 +1,4 @@
+package chan.util;
 import java.awt.Point;
 
 public class Hilbert {
