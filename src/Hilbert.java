@@ -3,6 +3,13 @@ import java.awt.Point;
 public class Hilbert {
 	
 	/* All of the code in this file was stolen from Wikipedia and converted from C to Java.
+	 * I do not understand even a little bit of this but it works so if you want comments then
+	 * go read the wikipedia article I took the code from.
+	 * 
+	 * Short explanation: Algorithm that makes a really weird curve in O(n) time, applied in
+	 * this program to obscure data written to the image, does not waste space as it is a 
+	 * space-filling curve.
+	 * 
 	 * https://en.wikipedia.org/wiki/Hilbert_curve
 	 */
 	

@@ -27,46 +27,66 @@ import javax.swing.filechooser.FileFilter;
 
 //Sorry for the lack of comments. I might get around to that eventually.
 
-//Main class for the program, controls frontend and allows the user to interface with the program
+/**
+ * Main class for the program, controls frontend and allows the user to interface with the program
+ * @author Christopher J. Chauvin
+ * @version 1.0
+ * @since   1.0
+ *
+ */
 public class Application {
 
 	//Prevents the use of photo types that may not be recognized by the program
+	/**List if image types known to work with this program*/
 	private String[] supportedTypes = {"png", "jpg", "bmp", "jpeg"};
 	
-	
+	/**The application window*/
 	private JFrame frame;
 	
-	//FileChooser used in selecting files and images, only needs one instance for both cases
+	/**FileChooser used in selecting files and images, only needs one instance for both cases*/
 	private JFileChooser fc = new JFileChooser();
 	
 	//Various labels, buttons, and bars that make up the UI of the application
-	//Self explanatory
+	/**Text label showing available space in human-readable format*/
 	private JLabel lblAvailableSpace = null;
+	/**Displays a preview of the selected image, not corrected for aspect ratio, may fix later*/
 	private JLabel lblImage;
+	/**Button used to select an Image*/
 	private JButton btnSetImage;
+	/**Button used to select a File*/
 	private JButton btnSetFile;
-	//The following two JTextAreas display the selected file paths
+	/**Displays the file path of the selected Image*/
 	private JTextArea txtrImage;
+	/**Displays the file path of the selected File*/
 	private JTextArea txtrFile;
-	//Progress bar to represent used space
+	/**Progress bar to represent used space*/
 	private JProgressBar pbUsed;
-	//Buttons that perform operations using the selected file and image
-	private JButton btnWrite; 
+	/**Button that, when clicked, writes the selected file to the selected image*/
+	private JButton btnWrite;
+	/**Button that, when clicked, extracts all files from the selected image*/
 	private JButton btnExtract;
+	/**Button that, when clicked, writes the selected file to the selected image*/
 	private JButton btnWipe;
 	
 	//Variables related to the selected Image
+	/**The Image that was selected*/
 	protected File imageFile = null;
 	protected BufferedImage image = null;
 	
 	//Variables related to the selected File
+	/**The File that was selected*/
 	protected File selectedFile = null;
 	
 	//For the Progress Bar
+	/**Measure of the total amount of space available in the selected image*/
 	protected long totalSpace;
+	/**Measure of the amount of used space in the selected image*/
 	protected long usedSpace;
 	
-	//Creates the window, calls the Application constructor
+	/**
+	 * Creates the window, calls the Application constructor
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -80,13 +100,18 @@ public class Application {
 		});
 	}
 	
-	//Calls the Initialize method, not sure why this is here but the program works so I'm not touching it.
+	/**
+	 * Calls the Initialize method, not sure why this is here but the program works so I'm not touching it.
+	 */
 	public Application() {
 		initialize();
 	}
 
-	//Initializes the various labels, buttons, and whatnot
-	/* The button functions defined later in this method handle 
+    
+	/**
+	 * Initializes the various labels, buttons, and whatnot
+	 * <p>
+	 * The button functions defined later in this method handle 
 	 * the way the frontend talks to the main program, not all
 	 * of them are simple method calls so don't skim over the
 	 * button initialization when debugging.
@@ -234,53 +259,82 @@ public class Application {
 		//Implement functionality of the "Write" button
 		btnWrite.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) {
+				//Check that an image and file are selected
 				if (image == null || selectedFile == null) {
-					//Alert the user that no image / file is selected
+					//Inform the user of which (Image, File, or both) is not selected
 					JOptionPane.showMessageDialog(frame, "No "+ (image == null ? (selectedFile == null ? "image or file" : "image") : "file") +" selected!", "ERROR!", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				
+				//Create an instance of the ImageFileWriter
 				ImageFileWriter ifw = new ImageFileWriter(image, true);
 				
+				//Attempt to write the selected file to the selected image
 				try {
+					//Tries to write file to image, 
 					boolean success = ifw.writeFile(selectedFile);
 					
+					//False is only returned if there isn't enough space, other errors are handled by throwing an exception.
 					if (success == false)
+						//Inform the user that there was not enough space to store the selected file
 						JOptionPane.showMessageDialog(frame, "Not enough space", "ERROR!", JOptionPane.ERROR_MESSAGE);
+					
+					
 				} catch (IOException e1) {
+					//Catch and display any exception that occurred during the above operation
 					e1.printStackTrace();
 					JOptionPane.showMessageDialog(frame, "An error occurred when writing the file:\n" + e1.toString(), "ERROR!", JOptionPane.ERROR_MESSAGE);
 				}
 				
 				try {
+					//Replace the image on the disk with the updated image
 					ImageIO.write(image, "png", imageFile);
 				} catch (IOException e1) {
-					JOptionPane.showMessageDialog(frame, "An error occurred when saving the Image:\n" + e1.toString(), "ERROR!", JOptionPane.ERROR_MESSAGE);
+					//Catch and display any exception that occurred during the above operation
+					JOptionPane.showMessageDialog(frame, "An error occurred when writing the Image to the disk:\n" + e1.toString(), "ERROR!", JOptionPane.ERROR_MESSAGE);
 					e1.printStackTrace();
 				}
 				
+				//Update the usedSpace variable, progress bar, etc.
 				analyzeSpace(image);
 			}
 		});
 	}
 	
+	/**The functionality of the "Set Image" button*/
 	private void selectStorage() {
+		//Some setup before displaying the FileChooser to the user
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		fc.setAcceptAllFileFilterUsed(false);
+		//Some setup before displaying the FileChooser to the user
 		fc.setFileFilter(new FileFilter() {
 			
+			//Create description using the supportedTypes list 
 			@Override public String getDescription() {
-				return "*.png, *.jpg, *.bmp";
+				String description = "";
+				
+				//Iterate through the supported types, adding them to the description
+				for (String type : supportedTypes) {
+					description += ", *." + type;
+				}
+				
+				//Returns the description
+				return description.substring(2);
 			}
 			
+			//Controls which files are displayed by the FileChooser
 			@Override public boolean accept(File f) {
+				//Show directories
 				if (f.isDirectory())
 					return true;
 				
+				//Reference to the supportedTypes array
 				final String[] extensions = supportedTypes;
 				
+				//Get name of file to be processed
 				String name = f.getName();
 				
+				//Check if the file's extension matches any of our supported types
 				for (int i = 0 ; i < extensions.length; i++) {
 					if (name.endsWith(extensions[i]))
 						return true;;
@@ -289,40 +343,61 @@ public class Application {
 				return false;
 			}
 		});
+		
+		//Show the FileChooser to the user
 		fc.showOpenDialog(frame);
 		
+		//Cancel operation if no file is selected
 		if (fc.getSelectedFile() == null)
 			return;
 		
+		//Keep a copy of the previously selected image in case the newly selected image has an error
 		File prevImageFile = imageFile;
 		
+		//Get the image chosen by the user
 		imageFile = fc.getSelectedFile();
 		
+		//Keep a copy of the previously selected image path in case the newly selected image has an error
+		String prevImagePath = txtrImage.getText();
+		
+		//Update the Image Path text area to reflect the new image	
 		txtrImage.setText("Image: " + imageFile.toPath());
 		
+		//Try to read the new image
 		try {
 			image = ImageIO.read(imageFile);
 		} catch (IOException e) {
+			//Reverse any performed operations if the newly selected image has an error being read
 			imageFile = prevImageFile;
+			txtrImage.setText(prevImagePath);
+			//Inform the user of the error
 			JOptionPane.showMessageDialog(frame, "Could not open " + imageFile.getName(), "Error!", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		
+		//Update the usedSpace variable and progress bar
 		analyzeSpace(image);
 		
-		//Scale image before use
+		//Scale image before use, scaling is not proportional, may fix later
 		BufferedImage icon = new BufferedImage(lblImage.getWidth(), lblImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		icon.createGraphics().drawImage(image, 0, 0, lblImage.getWidth(), lblImage.getHeight(), null);
 		lblImage.setIcon(new ImageIcon(icon));
 	}
 	
+	/**Method used to analyze the space available in the provided image and automatically updates
+	 * the totalSpace, usedSpace, usedSpace ProgressBar, and number of files already stored 
+	 * @param image
+	 */
 	private void analyzeSpace(BufferedImage image) {
+		//Calculate the amount of space available in the image
 		long pixels = (long) image.getWidth() * (long) image.getHeight(); //Pixel count
-		pixels *= 3; //3 bits per pixel
-		pixels /= 8; //8 bits per byte
-		totalSpace = pixels;
+		totalSpace = pixels; //Starting point for space calculation
+		totalSpace *= 3; //3 bits per pixel
+		totalSpace /= 8; //8 bits per byte
 		
+		//Begin usedSpace calculation
 		ImageFileReader ifr = new ImageFileReader(image, imageFile.getParentFile());
+		//Check if file needs to be formatted
 		if (ifr.eof == true) {
 			int result = JOptionPane.showConfirmDialog(frame, "This image must be formatted to store files, format now?", "Warning", JOptionPane.WARNING_MESSAGE);
 			
@@ -332,9 +407,12 @@ public class Application {
 				
 		}
 		usedSpace = 0L;
+		
+		//Setup for next operation
 		long skipLength = ifr.skipFile();
 		int skips = 0;
 		
+		//Count the number of files skipped and how long each one was for use in the usedSpace calculation
 		try {
 			while (skipLength != 0L) {
 				usedSpace += skipLength;
@@ -342,19 +420,23 @@ public class Application {
 				skipLength = ifr.skipFile();
 			}
 		} catch (Exception e) {
+			//If the file is corrupt, prompt the user and ask if they want to format the image
 			int response = JOptionPane.showConfirmDialog(frame, "Error opening file, wipe clean?", "ERROR!", JOptionPane.YES_NO_CANCEL_OPTION);
 			
+			//If anything that isn't "Yes" is selected, cancel the operation
 			if (response != JOptionPane.YES_OPTION)
 				return;
 			
+			//Set the usedSpace progress bar as indeterminate while Image is wiped
 			pbUsed.setMinimum(0);
 			pbUsed.setMaximum(100);
 			pbUsed.setValue(100);
 			pbUsed.setIndeterminate(true);
 			
-			
+			//Remove all file contents from the image
 			wipe();
 					
+			//Update the progress bar
 			pbUsed.setValue(0);
 			pbUsed.setIndeterminate(false);
 			
@@ -370,46 +452,70 @@ public class Application {
 				}
 			}).start();;
 			
+			//Runs the selectStorage method to "naturally" select the file again which restarts the space calculation
+			//The above thread cancels the fileChooser automatically
 			selectStorage();
 		}
 		
+		//Update the Extract button to show how many files can be extracted
 		btnExtract.setText("Extract (" + skips + ")");
 		
+		//Update the label displaying the amount of free spece available in the image
 		lblAvailableSpace.setText("Free Space: " + humanReadable(totalSpace - usedSpace) + " / " + humanReadable(totalSpace));
 		
+		//TODO If totalSpace is greater than Integer.MAX_VALUE the rounding will cause a non-fatal error
+		//Update the Used Space Progress Bar
 		pbUsed.setMinimum(0);
 		pbUsed.setMaximum((int) totalSpace);
 		pbUsed.setValue((int) usedSpace);
 	}
 	
+	/**The functionality of the "Set File" button*/
 	private void selectFile() {
+		//Some setup before displaying the FileChooser to the user
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		fc.setAcceptAllFileFilterUsed(true);
 		fc.resetChoosableFileFilters();
+		//Show the file chooser to the user
 		fc.showOpenDialog(frame);
 		
+		//Cancel operation if no file is selected
 		if (fc.getSelectedFile() == null)
 			return;
 		
+		//Keep a copy of the previously selected file in case the new file has an error being read
+		File previousFile = selectedFile;
+		
+		//Update the variable selectedFile to the newly selected file 
 		selectedFile = fc.getSelectedFile();
 		
-		//long fileSize;
-		
+		//Attempt to check the file's size to verify read privileges
 		try {
-			//fileSize = Files.size(selectedFile.toPath());
 			Files.size(selectedFile.toPath());
 		} catch (IOException e) {
+			//Reverse any changes made in the event that the file could not be read
+			selectedFile = previousFile;
+			//Inform the user of the error
 			JOptionPane.showMessageDialog(frame, "Could not open the file " + selectedFile.toString(), "ERROR!", JOptionPane.ERROR_MESSAGE); 
 		}
 		
+		//Update the File Path text area to reflect the new File
 		txtrFile.setText("File: " + selectedFile.toPath());
 	}
 	
+	/**
+	 * Wipe all contents from the selected Image
+	 * <p>
+	 * This operation cannot be undone
+	 */
 	private void wipe() {
 		try {
+			//Create an image writer
 			ImageDataOut ido = new ImageDataOut(image);
+			//How much space needs to be formatted
 			long space = ido.freeSpace();
-
+			
+			//Write 
 			ido.write(0xDB);
 			space--;
 			
