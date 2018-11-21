@@ -4,6 +4,12 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
+/**
+ * Class used for writing code to test various parts of the application
+ * intended only for use by the original developer
+ * @author Christopher J. Chauvin
+ *
+ */
 public class Debug {
 	public static void main (String[] args) {
 		try {
@@ -16,10 +22,13 @@ public class Debug {
 	private Long data = 0L;
 	
 	public void run() throws Exception {
+		//Hard-coded test file
 		BufferedImage image = ImageIO.read(new File("C:/Users/Christopher/Desktop/TEST.jpg"));
 		
+		//----------Read Test----------
+		//Reads the files in the image and displays them as plain text
 		DataInputStream dis = new DataInputStream(new ImageDataIn(image));
-		
+
 		data = (long) dis.readByte();
 		print();
 		data = (long) dis.readShort();
@@ -44,6 +53,7 @@ public class Debug {
 		
 		dis.close();
 		
+		//Attempts to extract a file from the image and returns its path
 		ImageFileReader ifr = new ImageFileReader(image, new File("C:/Users/Christopher/Desktop/TEST.jpg").getParentFile());
 		System.out.println(ifr.eof);
 		System.out.println(ifr.extractFile().toPath());

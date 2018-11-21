@@ -7,26 +7,53 @@ import java.io.InputStream;
 
 public class ImageDataIn extends InputStream {
 	
+	/**The image this stream is bound to*/
 	BufferedImage image;
+	/**Current position in the image*/
 	long index;
-	int currentBit;
-	int x, y;
-	int rgb;
-	Color c;
-	long resetIndex;
+	
+	/**Index used for the mark/reset functionality of InputStream*/
+	long markIndex;
+	
+	/**For use in the call to the Hilbert Curve class
+	 * <p>
+	 * The Hilbert curve requires a dimension that is some power of two, this variable stores
+	 * the power of 2 that is equal to or greater than the largest dimension of the selected image
+	 */
 	int sizePow2;
+	
+	/**This variable acts as the return for the Hilbert class since it is passed as a reference
+	 * and updated by the Hilbert class
+	 */
 	Point p;
+	
+	/**The hilbert class can only make perfect squares whose dimensions are equal and are some power
+	 * of two that is greater than one, these bounds are used to skip any positions calculated by
+	 * the Hilbert class that may be outside of the image's bounds 
+	 */
 	Rectangle bounds;
 	
+	/**Mask used in combination with the "binary AND" operator to get only the first bit from a given
+	 * byte
+	 */
 	private static int firstBitMask = 0x1;
 	
+	/**
+	 * Constructor for the ImageDataIn stream
+	 * @param image An image containing data
+	 */
 	public ImageDataIn(BufferedImage image) {
+		//Store the image as a global variable
 		this.image = image;
+		//Update bounds to reflect the given image
 		bounds = new Rectangle(0, 0, image.getWidth(), image.getHeight());
 		
-		
+		//Set size as 1
 		sizePow2 = 0x1;
 		
+		/*Shift the bit in sizePow2 left by one (effectively multiplies by two) until it is greater than or equal to
+		 * both of the image's dimensions
+		 */
 		while (sizePow2 < image.getWidth()) {
 			sizePow2 = sizePow2 << 1;
 		}
@@ -35,55 +62,37 @@ public class ImageDataIn extends InputStream {
 			sizePow2 = sizePow2 << 1;
 		}
 		
+		/* Initialize the Point object, the value does not matter as this is effectively a return type for calls to the
+		 * Hilbert class*/
 		p = new Point(0, 0);
 		
+		//Current index (bit) in the image
 		index = 0;
 	}
 	
 	@Override public int read() throws IOException {
-		
+		//Byte to be returned later
 		int out = 0x0;
 		
+		//Iterate for the length of a byte (in bits)
 		for (int i = 0; i < Byte.SIZE; i++) {
 			
-			/*
-			//Find x/y
+			//Find x/y using the Hilbert class
 			Hilbert.d2xy(sizePow2, (int) (index / 3), p);
 			
+			//If the location given by the Hilbert class is outside of the image bounds...
 			while (!bounds.contains(p)) {
-				index++;
-				Hilbert.d2xy(sizePow2, (int) (index / 3), p);
-			}
-			
-			x = p.x;
-			y = p.y;*/
-			
-			//Find x/y
-			Hilbert.d2xy(sizePow2, (int) (index / 3), p);
-			
-			while (!bounds.contains(p)) {
-				//System.err.println("read  " + p.toString() + " skip");
+				//...then keep calculating new ones until one is within the image bounds
 				index++;
 				Hilbert.d2xy(sizePow2, (int)(index / 3), p);
 			}
 			
-			//System.out.println("read  " + p.toString() + "\t" + currentBit);
+			//Get the color of the current pixel
+			int rgb = image.getRGB(p.x, p.y);
+			Color c = new Color(rgb);
 			
-			/*try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				System.err.println("Sleeping interrupted");
-			}*/
-			
-			x = p.x;
-			y = p.y;
-			
-			
-			//Get color
-			rgb = image.getRGB(x, y);
-			c = new Color(rgb);
-			
-			//Get correct color bit
+			//Select the current color and extract the first bit using a mask
+			int currentBit = 0;
 			switch ((int) (index % 3)) {
 				case 0:
 					currentBit = c.getRed() & firstBitMask;
@@ -96,26 +105,31 @@ public class ImageDataIn extends InputStream {
 					break;
 			}
 			
-			//Shift return
+			//Push the previously extracted bits left one to make room for the new one
 			out = out << 1;
 			
-			//Add current bit
+			//Add the new bit to the previously extracted bits
 			out = out | currentBit;
 			
 			//Increment index
 			index++;
-			
-			//System.out.print(currentBit + " ");
 		}
+		//Continues until one byte is extracted
 		
+		//Return the extracted byte
 		return out;
 	}
 	
+	/**
+	 * Fast forward the stream by the specified number of bytes
+	 * @param length The number of bytes to skip
+	 */
 	public long skip(long length) {
 		index += Byte.SIZE * length;
 		return 0L;
 	}
 	
+	//Implementation of a method from InputStream, functions as specified in InputStream
 	@Override public int read(byte[] b) throws IOException {
 		int i;
 		
@@ -126,6 +140,7 @@ public class ImageDataIn extends InputStream {
 		return i;
 	}
 	
+	//Gets the number of available bytes minus the amount of free space
 	public int available() {
 		long pixels = (long) image.getWidth() * (long) image.getHeight(); //Pixel count
 		
@@ -138,6 +153,7 @@ public class ImageDataIn extends InputStream {
 		return (int) pixels;
 	}
 	
+	//Gets the maximum possible amount of bytes that can be stored in the image
 	public int totalSpace() {
 		long pixels = (long) image.getWidth() * (long) image.getHeight(); //Pixel count
 		
@@ -148,16 +164,19 @@ public class ImageDataIn extends InputStream {
 		return (int) pixels;
 	}
 	
+	//Implementation of a method defined by InputStream
 	@Override public boolean markSupported() {
 		return true;
 	}
 	
+	//Implementation of a method defined by InputStream
 	@Override public synchronized void reset() throws IOException {
-		index = resetIndex;
+		index = markIndex;
 	}
 	
+	//Implementation of a method defined by InputStream
 	@Override public synchronized void mark(int readlimit) {
-		resetIndex = index;
+		markIndex = index;
 	}
 
 }
