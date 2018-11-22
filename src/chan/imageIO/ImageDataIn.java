@@ -51,7 +51,7 @@ public class ImageDataIn extends InputStream {
 		//Update bounds to reflect the given image
 		bounds = new Rectangle(0, 0, image.getWidth(), image.getHeight());
 		
-		//Set size as 1
+		//Initialize sizePow2
 		sizePow2 = 0x1;
 		
 		/*Shift the bit in sizePow2 left by one (effectively multiplies by two) until it is greater than or equal to
@@ -73,6 +73,9 @@ public class ImageDataIn extends InputStream {
 		index = 0;
 	}
 	
+	/**Implementation of a method from InputStream, functions as specified by InputStream
+	 * @see java.io.InputStream#read()
+	 */
 	@Override public int read() throws IOException {
 		//Byte to be returned later
 		int out = 0x0;
@@ -132,7 +135,9 @@ public class ImageDataIn extends InputStream {
 		return 0L;
 	}
 	
-	//Implementation of a method from InputStream, functions as specified by InputStream
+	/**Implementation of a method from InputStream, functions as specified by InputStream
+	 * @see java.io.InputStream#read(byte[])
+	 */
 	@Override public int read(byte[] b) throws IOException {
 		int i;
 		
@@ -143,7 +148,11 @@ public class ImageDataIn extends InputStream {
 		return i;
 	}
 	
-	//Gets the number of available bytes minus the amount of free space
+	/**Gets the number of bytes that have not been read
+	 * <p>
+	 * Note: this does not mean the remaining bytes will have data
+	 * @return number of bytes that have not been read
+	 */
 	public int available() {
 		long pixels = (long) image.getWidth() * (long) image.getHeight(); //Pixel count
 		
@@ -156,7 +165,11 @@ public class ImageDataIn extends InputStream {
 		return (int) pixels;
 	}
 	
-	//Gets the maximum possible amount of bytes that can be stored in the image
+	/**Gets the maximum possible amount of bytes that can be stored in the image
+	 * @return maximum possible amount of bytes that can be stored
+	 * 
+	 * TODO return long
+	 */
 	public int totalSpace() {
 		long pixels = (long) image.getWidth() * (long) image.getHeight(); //Pixel count
 		
@@ -167,17 +180,23 @@ public class ImageDataIn extends InputStream {
 		return (int) pixels;
 	}
 	
-	//Implementation of a method from InputStream, functions as specified by InputStream
+	/**Implementation of a method from InputStream, functions as specified by InputStream
+	 * @see java.io.InputStream#markSupported()
+	 */
 	@Override public boolean markSupported() {
 		return true;
 	}
 	
-	//Implementation of a method from InputStream, functions as specified by InputStream
+	/**Implementation of a method from InputStream, functions as specified by InputStream
+	 * @see java.io.InputStream#reset()
+	 */
 	@Override public synchronized void reset() throws IOException {
 		index = markIndex;
 	}
 	
-	//Implementation of a method from InputStream, functions as specified by InputStream
+	/**Implementation of a method from InputStream, functions as specified by InputStream
+	 * @see java.io.InputStream#mark(int)
+	 */
 	@Override public synchronized void mark(int readlimit) {
 		markIndex = index;
 	}
